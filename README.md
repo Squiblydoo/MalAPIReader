@@ -17,7 +17,7 @@ optional arguments:
   
   The --pe option takes one argument: the path and name to an PE file. It will then read the Import Address Table and check for any entries on MalAPI.io. If an entry is found, information about the API is then printed.
   
-  This option will list all the Import Address Table entries and print the description from MalAPI.io. For example, in the below image, OpenProcessToken was found and information was printed.
+  For example, in the below image, OpenProcessToken was found and information was printed.
   
   ![image](https://user-images.githubusercontent.com/77356206/139821165-75f5c780-f328-413b-9a4a-481bfeb3ce02.png)
 
