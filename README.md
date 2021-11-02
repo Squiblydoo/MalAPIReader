@@ -1,5 +1,5 @@
 # MalAPIReader
-Reads and prints information from the website MalAPI.io
+Reads and prints information from the website [MalAPI.io](https://malapi.io/)
 
 ``` 
 optional arguments:
