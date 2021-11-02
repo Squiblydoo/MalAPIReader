@@ -10,7 +10,17 @@ optional arguments:
   --look LOOK, -l LOOK  Look up an API by name and print all information.
 ```
   
-  The --look option takes one argument: the name of an API. It will then make a request for the basic details about the API from MalAPI.io and print it.
+  The --look option takes one argument: the name of an API. It will then make a request for the basic details about the API from MalAPI.io and print it. In the example below, we pass "CreateRemoteThread" as an argument and receive information back.
+  
+  ![Screenshot 2021-11-02 050332](https://user-images.githubusercontent.com/77356206/139817458-940378a8-d06a-433a-80f3-abfbfbd9400c.png)
+
   
   The --pe option takes one argument: the path and name to an PE file. It will then read the Import Address Table and check for any entries on MalAPI.io. If an entry is found, information about the API is then printed.
   
+  This option will list all the Import Address Table entries and print the description from MalAPI.io. For example, in the below image, OpenProcessToken was found and information was printed.
+  
+  ![image](https://user-images.githubusercontent.com/77356206/139821165-75f5c780-f328-413b-9a4a-481bfeb3ce02.png)
+
+  
+# Known Bug
+Keyboard Interrupts are not reliable. I am able to interrupt when running from IDLE but not when running from cmd.exe
