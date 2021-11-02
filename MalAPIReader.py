@@ -41,5 +41,5 @@ elif (args.pe):
     except KeyboardInterrupt:
         pass
         
-    print("If an WINAPI listed here was used maliciously, but its use was not listed, consider contributing information to MalAPI.io.")
+    print("If an WINAPI listed here was used maliciously, but no description was given, consider contributing information to MalAPI.io.")
             
