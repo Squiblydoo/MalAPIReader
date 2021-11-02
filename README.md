@@ -24,3 +24,8 @@ optional arguments:
   
 # Known Bug
 Keyboard Interrupts are not reliable. I am able to interrupt when running from IDLE but not when running from cmd.exe
+
+The script does not yet account for difference between Unicdoe and ANSI versions of API. That functionality will need to be implemented later. At this time, it will fail to find the API in the table if the API in the IAT does not match the MalAPI version exactly.
+
+# Thanks
+Thank you mr.d0x for the inspiring project.
