@@ -5,8 +5,9 @@ import argparse
 import sys
 import shelve
 from pathlib import Path
-#from utils.colors import *
+from utils.colors import *
 from datetime import datetime
+import traceback
 
 parser = argparse.ArgumentParser(description="Read information from MalAPI.io for WinAPI information.")
 parser.add_argument("--pe", "-p",
@@ -33,6 +34,8 @@ Storage = Path('.//Storage//MalAPIStorage.dat')
 if Storage.exists():
     malAPIDictionary = shelve.open('.//Storage//MalAPIStorage')
     print("Dictionary loaded")
+malAPIFound = []
+uncategorizedAPIFound = []
 
 if args.report:
     class Logger(object):
@@ -59,6 +62,7 @@ def load_dictionary(dictionaryFile):
 def check_api(api):
     sus_api = {}
     APItoCheck = api
+    ApiInfo = ""
     if args.verbose:
         print(info + APItoCheck)
     if args.live:
@@ -67,27 +71,18 @@ def check_api(api):
         APISoup = bs4.BeautifulSoup(APICheck.text, 'html.parser')
         details = APISoup.select('.detail-container .content')
         ApiInfo = details[1].getText().lstrip().rstrip()
-        if ApiInfo != "":
-            if args.verbose:
-                print(important + "Hit: " + api)
-            else:
-                print("Hit: " + api)
-            sus_api[api] = ApiInfo
-            return sus_api
-        else:
-            return
-    #If not using live option, the other option is using storage
     else:
         ApiInfo = malAPIDictionary['API'][APItoCheck]["Description"]
-        if ApiInfo != "":
-            if args.verbose:
-                print(important + "Hit: " + api)
-            else:
-                print("Hit: " + api)
-            sus_api[api] = ApiInfo
-            return sus_api
-        else:
-            return
+    if ApiInfo != "":
+        if args.verbose:
+            print(important + "Hit: " + api)
+        sus_api[api] = ApiInfo
+        malAPIFound.append(APItoCheck)
+        return sus_api
+    else:
+        return
+    #If not using live option, the other option is using storage
+
 
 
 def api_lookup():
@@ -138,6 +133,7 @@ def api_lookup():
                         malicious = check_api(imp_name)
                         mal_apis.update(malicious)
                     except:
+                        uncategorizedAPIFound.append(imp_name)
                         continue
         except KeyboardInterrupt:
             pass
@@ -157,8 +153,7 @@ def print_results(mal_results):
     for x in mal_results.keys():
         print(str(x) + "\n    \\\\---> " + str(mal_results[x]))
 
-    print("\n\nIf a WINAPI listed here was used maliciously, but no description was given, consider contributing "
-          "information to https://malapi.io.\n Thank you for using MalAPIReader!\n Squiblydoo | HuskyHacks")
+    
 
 
 def main():
@@ -168,6 +163,12 @@ def main():
         print(info + "Sample name: {}".format(args.pe))
     mal_api_results = api_lookup()
     print_results(mal_api_results)
+    print("Uncategorized API found: " + str(len(uncategorizedAPIFound)))
+    print("Potentially malicious API found: " + str(len(malAPIFound)))
+
+    print("\n\nIf a WINAPI listed here was used maliciously, but no description was given, consider contributing "
+          "information to https://malapi.io.\n Thank you for using MalAPIReader!\n Squiblydoo | HuskyHacks")
+
 
 
 if __name__ == "__main__":
