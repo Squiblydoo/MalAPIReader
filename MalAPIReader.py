@@ -3,6 +3,8 @@ import requests
 import bs4
 import argparse
 import sys
+import shelve
+from pathlib import Path
 #from utils.colors import *
 from datetime import datetime
 
@@ -13,6 +15,10 @@ parser.add_argument("--pe", "-p",
 parser.add_argument("--look", "-l", help="Look up an API by name and print all information.")
 parser.add_argument("--verbose", "-v", help="Increase verbosity of output", action="store_true")
 parser.add_argument("--report", "-r", help="Write report to the reports directory", action="store_true")
+#This is kinda hacky at the moment. 
+parser.add_argument("--live", help="Use data live on the site rather than stored data. Requires one argument 'y'")
+#TO DO: Allow user to update storage dictionary.
+#parser.add_argument("--update", "-u", help="Update saved MalAPI results.")
 
 args = parser.parse_args()
 if len(sys.argv) == 1:
@@ -21,6 +27,12 @@ if len(sys.argv) == 1:
 
 # Globals
 current_time = datetime.now()
+
+# Manage storage. If storage.dat exists, load the dictionary into memory using shelve.
+Storage = Path('.//Storage//MalAPIStorage.dat')
+if Storage.exists():
+    malAPIDictionary = shelve.open('.//Storage//MalAPIStorage')
+    print("Dictionary loaded")
 
 if args.report:
     class Logger(object):
@@ -38,26 +50,44 @@ if args.report:
 
     sys.stdout = Logger()
 
+# Read dictionary of results saved to disk
+def load_dictionary(dictionaryFile):
+    with open(dictionaryFile) as infile:
+        return infile.read()
 
+#Look up API as hosted on website
 def check_api(api):
     sus_api = {}
     APItoCheck = api
     if args.verbose:
         print(info + APItoCheck)
-    APICheck = requests.get("https://malapi.io/winapi/" + APItoCheck)
-    APICheck.raise_for_status()
-    APISoup = bs4.BeautifulSoup(APICheck.text, 'html.parser')
-    details = APISoup.select('.detail-container .content')
-    ApiInfo = details[1].getText().lstrip().rstrip()
-    if ApiInfo != "":
-        if args.verbose:
-            print(important + "Hit: " + api)
+    if args.live:
+        APICheck = requests.get("https://malapi.io/winapi/" + APItoCheck)
+        APICheck.raise_for_status()
+        APISoup = bs4.BeautifulSoup(APICheck.text, 'html.parser')
+        details = APISoup.select('.detail-container .content')
+        ApiInfo = details[1].getText().lstrip().rstrip()
+        if ApiInfo != "":
+            if args.verbose:
+                print(important + "Hit: " + api)
+            else:
+                print("Hit: " + api)
+            sus_api[api] = ApiInfo
+            return sus_api
         else:
-            print("Hit: " + api)
-        sus_api[api] = ApiInfo
-        return sus_api
+            return
+    #If not using live option, the other option is using storage
     else:
-        return
+        ApiInfo = malAPIDictionary['API'][APItoCheck]["Description"]
+        if ApiInfo != "":
+            if args.verbose:
+                print(important + "Hit: " + api)
+            else:
+                print("Hit: " + api)
+            sus_api[api] = ApiInfo
+            return sus_api
+        else:
+            return
 
 
 def api_lookup():
