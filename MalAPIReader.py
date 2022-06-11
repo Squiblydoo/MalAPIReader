@@ -7,7 +7,6 @@ import shelve
 from pathlib import Path
 from utils.colors import *
 from datetime import datetime
-import traceback
 
 parser = argparse.ArgumentParser(description="Read information from MalAPI.io for WinAPI information.")
 parser.add_argument("--pe", "-p",
@@ -16,10 +15,12 @@ parser.add_argument("--pe", "-p",
 parser.add_argument("--look", "-l", help="Look up an API by name and print all information.")
 parser.add_argument("--verbose", "-v", help="Increase verbosity of output", action="store_true")
 parser.add_argument("--report", "-r", help="Write report to the reports directory", action="store_true")
+
 #This is kinda hacky at the moment. 
 parser.add_argument("--live", help="Use data live on the site rather than stored data. Requires one argument 'y'")
+
 #TO DO: Allow user to update storage dictionary.
-#parser.add_argument("--update", "-u", help="Update saved MalAPI results.")
+#parser.add_argument("--update", "-u", help="Update saved MalAPI repository.")
 
 args = parser.parse_args()
 if len(sys.argv) == 1:
@@ -33,9 +34,17 @@ current_time = datetime.now()
 Storage = Path('.//Storage//MalAPIStorage.dat')
 if Storage.exists():
     malAPIDictionary = shelve.open('.//Storage//MalAPIStorage')
-    print("Dictionary loaded")
+    print("Dictionary loaded successfully")
+else: 
+    #If there is no storage, activate the live option.
+    args.live == 1
+    print("No local storage exists.")
+
+#Prepare arrays to print results. Later, we will print the number of API in the malAPI dictionary and the number that are not.
+#These numbers may be used for broader analysis.
 malAPIFound = []
 uncategorizedAPIFound = []
+
 
 if args.report:
     class Logger(object):
@@ -58,13 +67,15 @@ def load_dictionary(dictionaryFile):
     with open(dictionaryFile) as infile:
         return infile.read()
 
-#Look up API as hosted on website
+#Look up API
 def check_api(api):
     sus_api = {}
     APItoCheck = api
     ApiInfo = ""
     if args.verbose:
         print(info + APItoCheck)
+
+        #If the live tag was used, check the website for the results. If not, use the storage.
     if args.live:
         APICheck = requests.get("https://malapi.io/winapi/" + APItoCheck)
         APICheck.raise_for_status()
@@ -135,7 +146,9 @@ def api_lookup():
                     except:
                         uncategorizedAPIFound.append(imp_name)
                         continue
-        except KeyboardInterrupt:
+        except Exception as e:
+            print(printError + "Unable to parse Import table. There is no import table.")
+            print(printError + "Full Error: {}".format(str(e)))
             pass
     return mal_apis
 
@@ -162,9 +175,88 @@ def main():
         print(info + "Current time: {}".format(current_time))
         print(info + "Sample name: {}".format(args.pe))
     mal_api_results = api_lookup()
-    print_results(mal_api_results)
+    #print_results(mal_api_results)
     print("Uncategorized API found: " + str(len(uncategorizedAPIFound)))
     print("Potentially malicious API found: " + str(len(malAPIFound)))
+    resultsDictionary = {}
+
+    #Prepare a list to show by category
+    attackDictionary = []
+    attackEnumeration = []
+    attackInjection = []
+    attackEvasion = []
+    attackSpying = []
+    attackInternet = []
+    attackAntiAnalysis = []
+    attackRansomware = []
+    attackHelper = []
+
+
+    for apiFound in malAPIFound:
+        resultsDictionary[apiFound] = (malAPIDictionary['API'][apiFound])
+    for method in resultsDictionary:
+        
+        if resultsDictionary[method]["ATT&CK Info"] == "Injection":
+            attackInjection.append(method)
+        elif resultsDictionary[method]["ATT&CK Info"] == "Enumeration":
+            attackEnumeration.append(method)
+        elif resultsDictionary[method]["ATT&CK Info"] == "Evasion":
+            attackEvasion.append(method)
+        elif resultsDictionary[method]["ATT&CK Info"] == "Spying":
+            attackSpying.append(method)
+        elif resultsDictionary[method]["ATT&CK Info"] == "Anti-Analysis":
+            attackAntiAnalysis.append(method)
+        elif resultsDictionary[method]["ATT&CK Info"] == "Internet":
+            attackInternet.append(method)
+        elif resultsDictionary[method]["ATT&CK Info"] == "Ransomware":
+            attackRansomware.append(method)
+        elif resultsDictionary[method]["ATT&CK Info"] == "Helper":
+            attackHelper.append(method)
+        attackDictionary.append(resultsDictionary[method]["ATT&CK Info"])
+    
+    if len(attackEnumeration) > 0:
+        print("\nEnumeration type of API")
+    for i in attackEnumeration:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+
+    if len(attackInjection) > 0:
+        print("\nInjection type of API")
+    for i in attackInjection:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+
+    if len(attackEvasion) > 0:    
+        print("\nEvasion type of API")
+    for i in attackEvasion:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+
+    if len(attackSpying) > 0:
+        print("\nSpying type of API")
+    for i in attackSpying:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+
+    if len(attackInternet) > 0:
+        print("\nNetwork functionality API")
+    for i in attackInternet:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+
+    if len(attackAntiAnalysis) > 0:
+        print("\nAnti-Analysis type of API")
+    for i in attackAntiAnalysis:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+
+    if len(attackRansomware) > 0:
+        print("\nRansomware type of API")
+    for i in attackRansomware:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+
+    if len(attackHelper) > 0:
+        print("\nUtility type of API")
+    for i in attackHelper:
+        print(str(i) + "\n    \\\\---> " + str(resultsDictionary[i]["Description"]))
+    
+    #for s in sorted(resultsDictionary.items(), key=lambda k_v: k_v[1]['ATT&CK Info']):
+        #print(s)
+
 
     print("\n\nIf a WINAPI listed here was used maliciously, but no description was given, consider contributing "
           "information to https://malapi.io.\n Thank you for using MalAPIReader!\n Squiblydoo | HuskyHacks")
