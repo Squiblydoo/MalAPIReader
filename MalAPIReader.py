@@ -144,7 +144,7 @@ def api_lookup():
                         malicious = check_api(imp_name)
                         mal_apis.update(malicious)
                     except:
-                        uncategorizedAPIFound.append(imp_name)
+                        uncategorizedAPIFound.append(imp)
                         continue
         except Exception as e:
             print(printError + "Unable to parse Import table. There is no import table.")
