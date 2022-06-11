@@ -15,6 +15,10 @@ In this version, the default behavior is to use a locally stored database with t
 
 The locally stored database stores all the metadata from MalAPI though not all of it is visible in MalAPIReader.
 
+There are two utility programs added: MalDictionaryMaker.py and ReadStorage.py
+- MalDictionaryMaker.py - I first used HTTTrack to scrape the MalAPI.io website. This utility can then make it into a dictionary for use by MalAPIReader.
+- ReadStorage.py - If you need to check or manipulate the contents of the stored dictionary used by MalAPIReader, this is an example program to view contents. In the example in the file, it will print the whole dictionary sorted by the API name. 
+
 # Usage
 
   The primary option is the --pe option. This option has one required argument: the path and name to an PE file. It will then read the Import Address Table and check for any entries in the local MalAPI.io database (or check the live website, if the optional `--live` option is used. If an entry is found, information about each API is then printed.
