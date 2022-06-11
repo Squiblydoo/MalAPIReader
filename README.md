@@ -29,7 +29,7 @@ The locally stored database stores all the metadata from MalAPI though not all o
 
 
 # Things to Come
-I am planning on improving the output in cases when MalAPIReader throws up or does not have much to say. For example, .NET binaries return little information and I would like to inform the user as to why. Other edge cases are trying to be accounted for too: such as when a binary has no Import Table.
+I am planning on improving the output in cases when MalAPIReader throws up or does not have much to say. For example, .NET binaries return little information and I would like to inform the user as to why. Other edge cases are trying to be accounted for too: such as when a binary's import table cannot be handled by MalAPIReader.
 
 I am planning on better highlighting the most interesting imports and providing more guidance to the user.
 
