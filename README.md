@@ -17,7 +17,7 @@ The locally stored database stores all the metadata from MalAPI though not all o
 
 There are two utility programs added: MalDictionaryMaker.py and ReadStorage.py
 - MalDictionaryMaker.py - I first used HTTTrack to scrape the MalAPI.io website. This utility can then make it into a dictionary for use by MalAPIReader.
-- ReadStorage.py - If you need to check or manipulate the contents of the stored dictionary used by MalAPIReader, this is an example program to view contents. In the example in the file, it will print the whole dictionary sorted by the API name. 
+- ReadStorage.py - At the current time, this script gives an example of indexing into a dictionary. This script will be modified into a tool for maniputating the contents of the dictionary more effectively. The goal is to have a tool that can easily update or expand descriptions.
 
 # Usage
 
