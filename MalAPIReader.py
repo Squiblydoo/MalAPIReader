@@ -22,6 +22,11 @@ parser.add_argument("--live", help="Use data live on the site rather than stored
 #TO DO: Allow user to update storage dictionary.
 #parser.add_argument("--update", "-u", help="Update saved MalAPI repository.")
 
+# Read dictionary of results saved to disk
+def load_dictionary(dictionaryFile):
+    with shelve.open(dictionaryFile) as db:
+        return db.read()
+
 args = parser.parse_args()
 if len(sys.argv) == 1:
     parser.print_help()
@@ -33,7 +38,7 @@ current_time = datetime.now()
 # Manage storage. If storage.dat exists, load the dictionary into memory using shelve.
 Storage = Path('.//Storage//MalAPIStorage.dat')
 if Storage.exists():
-    malAPIDictionary = shelve.open('.//Storage//MalAPIStorage')
+    malAPIDictionary = shelve.open(".//Storage//MalAPIStorage")
     print("Dictionary loaded successfully")
 else: 
     #If there is no storage, activate the live option.
@@ -61,11 +66,6 @@ if args.report:
 
 
     sys.stdout = Logger()
-
-# Read dictionary of results saved to disk
-def load_dictionary(dictionaryFile):
-    with open(dictionaryFile) as infile:
-        return infile.read()
 
 #Look up API
 def check_api(api):
@@ -133,7 +133,7 @@ def api_lookup():
                                 print("[*] Checking ANSI variant: {}".format(ansi_imp))
                             ansi_mal = check_api(ansi_imp)
                             mal_apis.update(ansi_mal)
-                        if imp_name.endswith("A"):
+                        elif imp_name.endswith("A"):
                             if args.verbose:
                                 print("[*] ANSI API detected: " + imp_name)
                             unicode_imp = (imp_name[:-1] + "W")
@@ -141,6 +141,8 @@ def api_lookup():
                                 print("[*] Checking Unicode variant: {}".format(unicode_imp))
                             unicode_mal = check_api(unicode_imp)
                             mal_apis.update(unicode_mal)
+                        else:
+                            pass
                         malicious = check_api(imp_name)
                         mal_apis.update(malicious)
                     except:
@@ -258,10 +260,19 @@ def main():
         #print(s)
 
 
-    print("\n\nIf a WINAPI listed here was used maliciously, but no description was given, consider contributing "
-          "information to https://malapi.io.\n Thank you for using MalAPIReader!\n Squiblydoo | HuskyHacks")
+#Display information if only 1 uncategorized API is found and no malAPI. 
+# This 1 uncategorized API is likely mscoree.dll which indicates that the binary is a .NET binary.
+# Provide advice to the user.
+    if len(uncategorizedAPIFound) == 1 and len(malAPIFound) == 0:
+        if uncategorizedAPIFound[0].name == b'_CorExeMain':
+        
+            print("\n!!!!\n"
+                    "Evidence suggests this is a .NET executable therefore no import table exists.\n"
+                    "to better understand the binary, open it in a tool like DNSpy, ILSpy, DotPEEK."
+                    "\n!!!!")
 
 
+    print("\n\nThank you for using MalAPIReader!\n Squiblydoo | HuskyHacks")
 
 if __name__ == "__main__":
     main()
